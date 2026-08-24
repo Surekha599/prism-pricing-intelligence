@@ -37,6 +37,15 @@ PAGES = [
 
 @st.cache_resource(show_spinner="Loading analytics core …")
 def load_core():
+    if not (CACHE / "core.pkl").exists():
+        with st.spinner("First run: generating dataset, training models & optimizing "
+                        "(one time only — about 2-4 minutes) ..."):
+            try:
+                from pipeline import main as build_pipeline
+                build_pipeline()
+            except Exception as e:
+                st.error(f"Analytics build failed: {e}")
+                st.stop()
     with open(CACHE / "core.pkl", "rb") as f:
         core = pickle.load(f)
     core["tx"] = pd.read_csv(DATA / "transactions.csv", parse_dates=["transaction_date"])
